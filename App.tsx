@@ -1,34 +1,26 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 
-interface Post {
-  userId: number;
-  id: number;
-  title: string;
-  completd: boolean;
+interface User {
+  name: string;
 }
+
 export default function App() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const fetchTodos = async (): Promise<Post[]> => {
-    const res = await fetch ('https://jsonplaceholder.typicode.com/posts');
-    const data = await res.json();
-    return data as Post[];
-  };
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    fetchTodos().then((result) => setPosts(result));
+    fetch('https://jsonplaceholder.typicode.com/users/1')
+      .then(res => res.json())
+      .then(data => setUser(data as User))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
   }, []);
-  return (
-    <FlatList
-      data={posts}
-      keyExtractor = {(item) => item.id.toString()}
-      renderItem = {({item}) => (
-        <View style={styles.item}>
-          <Text> {item.title}</Text>
-        </View>
-      )}
-      />
-  );
+
+  if (loading) return <View style={styles.container}><Text>Đang tải...</Text></View>;
+  if (!user) return <View style={styles.container}><Text>Không tìm thấy user</Text></View>;
+
+  return <View style={styles.container}><Text style={styles.text}>Tên: {user?.name}</Text></View>;
 }
 
 const styles = StyleSheet.create({
@@ -38,10 +30,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  item: {
-    padding: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor :'#eee',
+  text: {
+    fontSize: 16,
+    color: '#000',
   },
 });
